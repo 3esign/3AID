@@ -450,11 +450,17 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
         </select>
       </div>
 
-      {vaseParameters.texture !== 'polished' && (
+      {(vaseParameters.texture !== 'polished' || vaseParameters.pattern !== 'none') && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
           <div className="control-group">
             <div className="control-label">
-              <span>Texture Frequency</span>
+              <span>
+                {vaseParameters.pattern !== 'none'
+                  ? vaseParameters.texture !== 'polished'
+                    ? 'Pattern & Texture Frequency'
+                    : 'Pattern Frequency'
+                  : 'Texture Frequency'}
+              </span>
               <span className="control-value">{vaseParameters.textureFrequency}</span>
             </div>
             <input
@@ -469,7 +475,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
 
           <div className="control-group">
             <div className="control-label">
-              <span>Texture Scale Factor</span>
+              <span>
+                {vaseParameters.pattern !== 'none'
+                  ? vaseParameters.texture !== 'polished'
+                    ? 'Pattern & Texture Scale'
+                    : 'Pattern Scale'
+                  : 'Texture Scale Factor'}
+              </span>
               <span className="control-value">{vaseParameters.textureScale.toFixed(1)}x</span>
             </div>
             <input
@@ -482,20 +494,22 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
             />
           </div>
 
-          <div className="control-group">
-            <div className="control-label">
-              <span>Texture Depth</span>
-              <span className="control-value">{vaseParameters.textureDepth.toFixed(2)} mm</span>
+          {vaseParameters.texture !== 'polished' && (
+            <div className="control-group">
+              <div className="control-label">
+                <span>Texture Depth</span>
+                <span className="control-value">{vaseParameters.textureDepth.toFixed(2)} mm</span>
+              </div>
+              <input
+                type="range"
+                min="0.10"
+                max="1.50"
+                step="0.05"
+                value={vaseParameters.textureDepth}
+                onChange={(e) => updateVaseParam('textureDepth', parseFloat(e.target.value))}
+              />
             </div>
-            <input
-              type="range"
-              min="0.10"
-              max="1.50"
-              step="0.05"
-              value={vaseParameters.textureDepth}
-              onChange={(e) => updateVaseParam('textureDepth', parseFloat(e.target.value))}
-            />
-          </div>
+          )}
         </div>
       )}
 

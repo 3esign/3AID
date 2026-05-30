@@ -127,16 +127,16 @@ export function generateVaseGeometry(params: VaseParameters): THREE.BufferGeomet
     const v = h / heightSegments;
 
     if (pattern === 'slots') {
-      // 6 vertical slots around circumference
-      const slotCount = 6;
+      // Scale slot count dynamically based on textureFrequency and textureScale
+      const slotCount = Math.max(2, Math.round((textureFrequency * textureScale) / 2));
       const localU = (u * slotCount) % 1;
       return localU < 0.20; // 20% slot cutout width
     }
 
     if (pattern === 'perforated') {
-      // Grid of circular holes
-      const freqU = 12;
-      const freqV = 10;
+      // Grid of circular holes scaled dynamically
+      const freqU = Math.max(4, Math.round(textureFrequency * textureScale));
+      const freqV = Math.max(3, Math.round(freqU * 0.8));
       const uc = Math.round(u * freqU) / freqU;
       const vc = Math.round(v * freqV) / freqV;
       
@@ -150,9 +150,9 @@ export function generateVaseGeometry(params: VaseParameters): THREE.BufferGeomet
     }
 
     if (pattern === 'voronoi') {
-      // Procedural organic cell strut networks
-      const cols = 5;
-      const rows = 9;
+      // Procedural organic cell strut networks scaled dynamically
+      const cols = Math.max(2, Math.round((textureFrequency * textureScale) / 2.4));
+      const rows = Math.max(3, Math.round(cols * 1.8));
       const cellCol = Math.floor(u * cols);
       const cellRow = Math.floor(v * rows);
       
@@ -185,22 +185,23 @@ export function generateVaseGeometry(params: VaseParameters): THREE.BufferGeomet
         }
       }
       
-      //Strut thickness threshold. Wide gap = hole, narrow gap = solid strut!
-      return (minDist2 - minDist1) > 0.055;
+      // Strut thickness threshold scaled proportionally to maintain relative thickness
+      const strutThreshold = 0.275 / cols;
+      return (minDist2 - minDist1) > strutThreshold;
     }
 
     if (pattern === 'lattice') {
-      // Diamond lattice cross-hatching pattern
-      const freqU = 12;
-      const freqV = 10;
+      // Diamond lattice cross-hatching pattern scaled dynamically
+      const freqU = Math.max(4, Math.round(textureFrequency * textureScale));
+      const freqV = Math.max(3, Math.round(freqU * 0.8));
       const val1 = Math.abs((u * freqU + v * freqV) % 1.0 - 0.5);
       const val2 = Math.abs((u * freqU - v * freqV) % 1.0 - 0.5);
       return val1 > 0.16 && val2 > 0.16; // diamond cutouts are holes, lines are solid metal struts
     }
 
     if (pattern === 'spiral') {
-      // Helical spiral cutout ribbons wrapping around the vase
-      const spiralCount = 4;
+      // Helical spiral cutout ribbons wrapping around the vase scaled dynamically
+      const spiralCount = Math.max(1, Math.round((textureFrequency * textureScale) / 3));
       const twistFactor = 1.2;
       const rawVal = (u * spiralCount - v * spiralCount * twistFactor) % 1.0;
       const val = (rawVal + 1.0) % 1.0;
