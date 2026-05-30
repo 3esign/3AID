@@ -11,6 +11,7 @@ export interface LampParameters {
   slotCount: number;        // 0 to 12 (number of vertical cutout holes)
   slotWidthAngle: number;   // 0 to 0.3 rad (width of the cutouts)
   printSafeEnabled: boolean; // Closed-loop Print-Safe CAD optimization!
+  resolution?: 'low' | 'medium' | 'high' | 'ultra'; // Mesh resolution quality!
 }
 
 export function generateLampGeometry(params: LampParameters): THREE.BufferGeometry {
@@ -24,7 +25,8 @@ export function generateLampGeometry(params: LampParameters): THREE.BufferGeomet
     pleatDepth,
     slotCount,
     slotWidthAngle,
-    printSafeEnabled
+    printSafeEnabled,
+    resolution = 'medium'
   } = params;
 
   // Real-time wall thickness optimization
@@ -32,8 +34,20 @@ export function generateLampGeometry(params: LampParameters): THREE.BufferGeomet
     ? Math.max(1.2, Math.round(rawWallThickness / 0.4) * 0.4) 
     : rawWallThickness;
 
-  const radialSegments = 72; // highly subdivided to resolve pleats
-  const heightSegments = 30;
+  // Set grid resolution based on selected mesh quality
+  let radialSegments = 72; // highly subdivided to resolve pleats
+  let heightSegments = 30;
+
+  if (resolution === 'low') {
+    radialSegments = 40;
+    heightSegments = 20;
+  } else if (resolution === 'high') {
+    radialSegments = 108;
+    heightSegments = 45;
+  } else if (resolution === 'ultra') {
+    radialSegments = 144;
+    heightSegments = 60;
+  }
 
   const vertices: number[] = [];
   const indices: number[] = [];

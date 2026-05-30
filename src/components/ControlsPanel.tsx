@@ -715,6 +715,68 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
           </span>
         </div>
 
+        {/* Mesh Resolution Quality Controls */}
+        <div className="control-group" style={{
+          background: 'rgba(255, 255, 255, 0.02)',
+          padding: '12px 14px',
+          borderRadius: '8px',
+          border: '1px solid var(--glass-border)',
+          marginBottom: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🌐 MESH RESOLUTION QUALITY
+            </span>
+            <select
+              className="premium-select"
+              style={{ width: '140px', padding: '4px 8px', fontSize: '0.75rem', borderRadius: '4px' }}
+              value={
+                activeModel === 'ring' ? parameters.resolution || 'medium' :
+                activeModel === 'vase' ? vaseParameters.resolution || 'medium' :
+                lampParameters.resolution || 'medium'
+              }
+              onChange={(e) => {
+                const val = e.target.value as any;
+                if (activeModel === 'ring') {
+                  updateRingParam('resolution', val);
+                } else if (activeModel === 'vase') {
+                  updateVaseParam('resolution', val);
+                } else {
+                  updateLampParam('resolution', val);
+                }
+              }}
+            >
+              <option value="low">Draft (Fast)</option>
+              <option value="medium">Standard</option>
+              <option value="high">High Detail</option>
+              <option value="ultra">Ultra (Print-Ready)</option>
+            </select>
+          </div>
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+            {activeModel === 'vase' && (
+              vaseParameters.resolution === 'low' ? 'Draft Mode: 44 radial, 50 height segments. Interactive speed optimized.' :
+              vaseParameters.resolution === 'high' ? 'High Detail: 108 radial, 120 height segments. Smooth curvature.' :
+              vaseParameters.resolution === 'ultra' ? 'Ultra Resolution: 144 radial, 160 height segments. Zero faceted edges.' :
+              'Standard Detail: 72 radial, 80 height segments. Balanced viewport performance.'
+            )}
+            {activeModel === 'lamp' && (
+              lampParameters.resolution === 'low' ? 'Draft Mode: 40 radial, 20 height segments. Highly fluid rotations.' :
+              lampParameters.resolution === 'high' ? 'High Detail: 108 radial, 45 height segments. Beautiful pleats.' :
+              lampParameters.resolution === 'ultra' ? 'Ultra Resolution: 144 radial, 60 height segments. Perfectly smooth.' :
+              'Standard Detail: 72 radial, 30 height segments. Balanced viewport performance.'
+            )}
+            {activeModel === 'ring' && (
+              parameters.resolution === 'low' ? 'Draft Mode: 60 band, 10 profile segments. Perfect for fast dragging.' :
+              parameters.resolution === 'high' ? 'High Detail: 180 band, 24 profile segments. Crisp luxury details.' :
+              parameters.resolution === 'ultra' ? 'Ultra Resolution: 240 band, 32 profile segments. Smooth polished metal.' :
+              'Standard Detail: 120 band, 16 profile segments. Balanced viewport performance.'
+            )}
+          </span>
+        </div>
+
         {activeModel === 'ring' && renderRingControls()}
         {activeModel === 'vase' && renderVaseControls()}
         {activeModel === 'lamp' && renderLampControls()}

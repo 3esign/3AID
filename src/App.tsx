@@ -32,7 +32,8 @@ const App: React.FC = () => {
     gemShape: 'brilliant',
     gemColor: 'diamond',
     prongCount: 4,
-    printSafeEnabled: false
+    printSafeEnabled: false,
+    resolution: 'medium'
   });
 
   // B. Wave Vase
@@ -49,7 +50,8 @@ const App: React.FC = () => {
     pattern: 'none',
     profileStyle: 'classic',
     textureScale: 1.0,
-    printSafeEnabled: false
+    printSafeEnabled: false,
+    resolution: 'medium'
   });
 
   // C. Pleated Lamp Shade
@@ -63,7 +65,8 @@ const App: React.FC = () => {
     pleatDepth: 4.0,
     slotCount: 8,
     slotWidthAngle: 0.12,
-    printSafeEnabled: false
+    printSafeEnabled: false,
+    resolution: 'medium'
   });
 
   // D. Luxury material theme

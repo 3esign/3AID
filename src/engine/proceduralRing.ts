@@ -22,6 +22,7 @@ export interface RingParameters {
   gemColor: 'diamond' | 'ruby' | 'sapphire' | 'emerald' | 'amethyst';
   prongCount: 4 | 6;
   printSafeEnabled: boolean; // Closed-loop Print-Safe CAD optimization!
+  resolution?: 'low' | 'medium' | 'high' | 'ultra'; // Mesh resolution quality!
 }
 
 // Generate the Ring Band geometry
@@ -34,7 +35,8 @@ export function generateRingBandGeometry(params: RingParameters): THREE.BufferGe
     texture,
     textureFrequency,
     textureDepth,
-    printSafeEnabled
+    printSafeEnabled,
+    resolution = 'medium'
   } = params;
 
   // Real-time printing thickness optimization
@@ -43,11 +45,18 @@ export function generateRingBandGeometry(params: RingParameters): THREE.BufferGe
   const innerRadius = innerDiameter / 2;
   const outerRadiusBase = innerRadius + thickness;
 
-  // Determine subdivisions based on shape
+  // Determine subdivisions based on shape and resolution
   let radialSegments = 120;
+  if (resolution === 'low') {
+    radialSegments = 60;
+  } else if (resolution === 'high') {
+    radialSegments = 180;
+  } else if (resolution === 'ultra') {
+    radialSegments = 240;
+  }
 
   if (bandShape === 'faceted') {
-    radialSegments = 12; // Low poly faceted look
+    radialSegments = 12; // Low poly faceted look remains fixed for geometric style
   }
 
   const vertices: number[] = [];
@@ -85,7 +94,14 @@ export function generateRingBandGeometry(params: RingParameters): THREE.BufferGe
   const profileZ: number[] = [];
   const profileR: number[] = [];
 
-  const profileSegments = 16; // Subdivisions of the cross-section
+  let profileSegments = 16; // Subdivisions of the cross-section
+  if (resolution === 'low') {
+    profileSegments = 10;
+  } else if (resolution === 'high') {
+    profileSegments = 24;
+  } else if (resolution === 'ultra') {
+    profileSegments = 32;
+  }
   
   for (let i = 0; i <= profileSegments; i++) {
     const t = i / profileSegments; // 0 to 1
