@@ -7,6 +7,9 @@
 
 > **An open-source, real-time parametric generative CAD studio for functional 3D-printable models. Designed for high-performance digital fabrication, additive manufacturing, and support-free toolpathing.**
 
+### 🌟 Studio Viewport Showcase
+![3AID Parametric CAD Viewport Studio](screenshots/vase_diamond_lattice.png)
+
 ---
 
 ## 🌐 Overview & Philosophy
@@ -49,6 +52,13 @@ Based on contemporary additive manufacturing literature, the optimizer inspects 
 ### 3. Real-Time STL Checker & Diagnostics
 *   **Asynchronous Watertight Solver**: Uses a debounced boundary edge detector (120ms) to check for non-manifold edges, invalid normals, and open boundaries at a smooth 60 FPS.
 *   **Volume & Weight Translations**: Computes precise model volume in $\text{mm}^3$ and automatically calculates the active metal weight for Yellow Gold 18K, Rose Gold 18K, and Platinum 950.
+
+#### 🛠️ Watertight Manifold Solver Showcase (Before & After)
+To resolve non-manifold splits and overlapping faces, 3AID implements explicit cross-section segment allocation and periodic seamless textures:
+
+| ❌ Mismatched Seams & Face Overlaps (Before Fix) |  Manifold Watertight Band (After Fix) |
+| :---: | :---: |
+| ![Overlap Error](screenshots/ring_seam_overlap_error.png) | ![Clean Seam Closure](screenshots/ring_seam_fix_detail.png) |
 
 ### 4. Multi-LOD Mesh Resolution Selector
 Allows the user to scale detail density depending on viewport requirements:
