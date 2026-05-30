@@ -67,10 +67,10 @@ export function generateRingBandGeometry(params: RingParameters): THREE.BufferGe
   // Helper for simple pseudo-noise for hammered texture
   const getHammeredNoise = (theta: number, z: number) => {
     const f = textureFrequency;
-    // Harmonic trigonometric noise to simulate hammered metal divots
+    // Harmonious periodic noise: use exact integer factors to guarantee 100% periodic seamless loop at 2PI!
     const val1 = Math.sin(theta * f) * Math.cos((z / width) * f * 2);
-    const val2 = Math.sin(theta * f * 2.3 + 1.2) * Math.cos((z / width) * f * 1.7 + 0.5);
-    const val3 = Math.sin(theta * f * 0.5 - 0.8) * Math.cos((z / width) * f * 0.9);
+    const val2 = Math.sin(theta * f * 2 + 1.2) * Math.cos((z / width) * f * 1.7 + 0.5);
+    const val3 = Math.sin(theta * f * 3 - 0.8) * Math.cos((z / width) * f * 0.9);
     
     // Create indentations (always negative or positive indentations)
     const combined = 0.5 * val1 + 0.35 * val2 + 0.15 * val3;
@@ -103,74 +103,66 @@ export function generateRingBandGeometry(params: RingParameters): THREE.BufferGe
     profileSegments = 32;
   }
   
-  for (let i = 0; i <= profileSegments; i++) {
-    const t = i / profileSegments; // 0 to 1
+  // Allocate exact subdivisions to each section to prevent segment skipping and intersections at different resolutions!
+  const pInner = Math.max(3, Math.round(profileSegments * 0.25));
+  const pBottom = Math.max(2, Math.round(profileSegments * 0.10));
+  const pOuter = Math.max(5, Math.round(profileSegments * 0.40));
+  const pTop = Math.max(2, profileSegments - pInner - pBottom - pOuter);
+
+  // 1. Inner Wall: sweeping from top (+width/2) to bottom (-width/2) at innerRadius
+  for (let i = 0; i <= pInner; i++) {
+    const t = i / pInner;
+    const z = (0.5 - t) * width;
+    let r = innerRadius;
+    if (bandShape === 'comfort') {
+      const normZ = z / (width / 2);
+      r = innerRadius - 0.12 * (1.0 - normZ * normZ);
+    }
+    profileZ.push(z);
+    profileR.push(r);
+  }
+
+  // 2. Bottom Cap: sweeping from innerRadius to outerRadiusBase at bottom (-width/2)
+  for (let i = 1; i <= pBottom; i++) {
+    const t = i / pBottom;
+    const z = -width / 2;
+    const r = innerRadius + (outerRadiusBase - innerRadius) * t;
+    profileZ.push(z);
+    profileR.push(r);
+  }
+
+  // 3. Outer Wall: sweeping from bottom (-width/2) to top (+width/2) at outerRadiusBase
+  for (let i = 1; i <= pOuter; i++) {
+    const t = i / pOuter;
+    const z = (t - 0.5) * width;
+    let r = outerRadiusBase;
     
-    if (t <= 0.25) {
-      // 1. Inner wall going from top (+W/2) to bottom (-W/2)
-      const wallT = (0.25 - t) / 0.25; // 1 to 0
-      const z = (wallT - 0.5) * width;
-      let r = innerRadius;
-      if (bandShape === 'comfort') {
-        const normZ = z / (width / 2); // -1 to 1
-        r = innerRadius - 0.12 * (1.0 - normZ * normZ);
-      }
-      profileZ.push(z);
-      profileR.push(r);
-    } 
-    else if (t <= 0.3) {
-      // 2. Bottom flat cap going from inner to outer radius
-      const capT = (t - 0.25) / 0.05; // 0 to 1
-      const z = -width / 2;
-      const r = innerRadius + (outerRadiusBase - innerRadius) * capT * 0.15; // slightly bevelled start
-      profileZ.push(z);
-      profileR.push(r);
+    if (bandShape === 'domed') {
+      const normZ = z / (width / 2);
+      const domeHeight = thickness * 0.45;
+      r = outerRadiusBase - domeHeight * (normZ * normZ);
+    } else if (bandShape === 'faceted') {
+      const normZ = z / (width / 2);
+      r = outerRadiusBase - thickness * 0.2 * Math.abs(normZ);
     }
-    else if (t <= 0.7) {
-      // 3. Outer wall going from bottom (-W/2) to top (+W/2)
-      const outerT = (t - 0.3) / 0.4; // 0 to 1
-      const z = (outerT - 0.5) * width;
-      let r = outerRadiusBase;
-      
-      if (bandShape === 'domed') {
-        const normZ = z / (width / 2);
-        const domeHeight = thickness * 0.45;
-        r = outerRadiusBase - domeHeight * (normZ * normZ);
-      } else if (bandShape === 'faceted') {
-        // Low poly profile
-        const normZ = z / (width / 2);
-        r = outerRadiusBase - thickness * 0.2 * Math.abs(normZ);
+
+    if (texture === 'grooved') {
+      if (Math.abs(z) < width * 0.15) {
+        r -= thickness * 0.3;
       }
-      
-      if (texture === 'grooved') {
-        if (Math.abs(z) < width * 0.15) {
-          r -= thickness * 0.3;
-        }
-      }
-      
-      profileZ.push(z);
-      profileR.push(r);
     }
-    else if (t <= 0.75) {
-      // 4. Top flat cap going from outer to inner radius
-      const capT = (0.75 - t) / 0.05; // 1 to 0
-      const z = width / 2;
-      const r = innerRadius + (outerRadiusBase - innerRadius) * capT * 0.15;
-      profileZ.push(z);
-      profileR.push(r);
-    }
-    else {
-      // 5. Connect back to start inner top
-      const wallT = (1.0 - t) / 0.25; // 1 to 0
-      const z = (0.5 - wallT) * width;
-      let r = innerRadius;
-      if (bandShape === 'comfort') {
-        const normZ = z / (width / 2);
-        r = innerRadius - 0.12 * (1.0 - normZ * normZ);
-      }
-      profileZ.push(z);
-      profileR.push(r);
-    }
+    
+    profileZ.push(z);
+    profileR.push(r);
+  }
+
+  // 4. Top Cap: sweeping from outer base back to innerRadius at top (+width/2)
+  for (let i = 1; i <= pTop; i++) {
+    const t = i / pTop;
+    const z = width / 2;
+    const r = outerRadiusBase - (outerRadiusBase - innerRadius) * t;
+    profileZ.push(z);
+    profileR.push(r);
   }
 
   const profileSize = profileZ.length;
@@ -188,8 +180,8 @@ export function generateRingBandGeometry(params: RingParameters): THREE.BufferGe
       let radius = profileR[p];
       let z = profileZ[p] + waveShift;
 
-      // Apply textures ONLY to the outer facing part of the profile
-      const isOuterFace = p > profileSize * 0.25 && p < profileSize * 0.75;
+      // Apply textures ONLY to the outer facing part of the profile (precise bounds!)
+      const isOuterFace = p > pInner + pBottom && p <= pInner + pBottom + pOuter;
       if (isOuterFace) {
         if (texture === 'hammered') {
           // Geometry displacement
@@ -207,9 +199,8 @@ export function generateRingBandGeometry(params: RingParameters): THREE.BufferGe
       vertices.push(x, y, z);
       uvs.push(u, p / (profileSize - 1));
 
-      // Standard normal placeholder (will compute later or use math)
-      // For cylinders, simple normal points outward for outer, inward for inner
-      const isInnerFace = p <= profileSize * 0.25 || p >= profileSize * 0.75;
+      // Standard normal placeholder (precise boundary indices!)
+      const isInnerFace = p <= pInner || p > pInner + pBottom + pOuter;
       const normalMult = isInnerFace ? -1 : 1;
       normals.push(cosTheta * normalMult, sinTheta * normalMult, 0);
     }
